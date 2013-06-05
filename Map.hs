@@ -21,10 +21,18 @@ newMap = Map { _tiles = map (\x -> if (x `mod` 7 == 0) then newTile WallTile els
              , _rowSize = 10
              }
 
+gridToMap :: (Int, Int) -> (GL.GLfloat, GL.GLfloat)
+gridToMap (x, y) = (realX, realY)
+  where
+    realX = (fromIntegral x) * offsetX :: GLfloat
+    realY = (fromIntegral y) * hexToBottom * 2 + offsetY :: GLfloat
+    offsetX = 3 / 2 * tileHexRadius
+    offsetY = if (x `mod` 2 == 1) then (hexToBottom) else 0
+    hexToBottom = cos(pi/6) * tileHexRadius
+
 renderTileAtIndex :: Map -> (Tile, Int) -> IO ()
 renderTileAtIndex map (tile, i) = do
-    let x = (fromIntegral (i `mod` map^.rowSize)) * tileSize :: GLfloat
-    let y = (fromIntegral (i `div` map^.rowSize)) * tileSize :: GLfloat
+    let (x, y) = gridToMap (i `divMod` (map^.rowSize))
     renderTile tile x y
 
 renderMap map = do

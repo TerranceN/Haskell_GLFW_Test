@@ -5,6 +5,7 @@ module GSBomberMan
 ) where
 
 import Control.Lens
+import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 import qualified Graphics.UI.GLFW as GLFW
@@ -16,12 +17,14 @@ import Input
 data GSBomberMan = GSBomberMan { _shouldDraw :: Bool
                                , _num :: Int
                                , _gameMap :: Map 
+                               , _exitState :: ExitType
                                } deriving (Eq, Show)
 makeLenses ''GSBomberMan
 
 new = GSBomberMan { _num = 1
                   , _gameMap = newMap
                   , _shouldDraw = True
+                  , _exitState = NoExit
                   }
 
 instance GameState GSBomberMan where
@@ -31,6 +34,9 @@ instance GameState GSBomberMan where
         if isKeyDown input (GLFW.CharKey 'W')
             then shouldDraw .= False
             else shouldDraw .= True
+        if isKeyDown input (GLFW.SpecialKey GLFW.ESC)
+            then exitState .= Exit
+            else return ()
 
     -- update :: State GSBomberMan ()
     update = return ()
@@ -43,7 +49,7 @@ instance GameState GSBomberMan where
                 then renderMap (self^.gameMap)
                 else return ()
 
-    -- shouldExit :: IO Bool
-    shouldExit = return NoExit
+    -- shouldExit :: StateT GSBomberMan IO Bool
+    shouldExit = liftM (^.exitState) get
 
     getNextState = return Nothing

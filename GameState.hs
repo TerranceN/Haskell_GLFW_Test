@@ -11,6 +11,7 @@ import Input
 data ExitType = NoExit
               | Exit
               | ExitAll
+              deriving (Eq, Show)
 
 class GameState a where
     initialize :: StateT a IO ()
