@@ -1,0 +1,16 @@
+Name:                GLFW-Test
+Version:             0.0
+Description:         Test game using GLFW, probably going to be a bomberman clone
+Author:              Terrance Niechciol
+Maintainer:          TNiechciol@gmail.com
+Build-Type:          Simple
+Cabal-Version:       >=1.2
+Executable GLFW_Test
+  Main-is:           Main.hs
+  Build-Depends:     base,
+                     mtl,
+                     OpenGL,
+                     GLFW,
+                     lens,
+                     transformers,
+                     timeit

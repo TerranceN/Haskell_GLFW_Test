@@ -1,0 +1,5 @@
+# Haskell build files
+*.hi
+*.o
+.DS_Store
+/dist/*
