@@ -47,15 +47,3 @@ renderTile tile x y = do
     GL.color $ (GL.Color3 0 0 0 :: GL.Color3 GL.GLfloat)
     GL.renderPrimitive GL.LineStrip $ do
         hexPoints x y tileHexRadius
-    -- GL.renderPrimitive GL.Quads $ do
-    --     GL.vertex $ GL.Vertex2 x y
-    --     GL.vertex $ GL.Vertex2 (x + tileSize) y
-    --     GL.vertex $ GL.Vertex2 (x + tileSize) (y + tileSize)
-    --     GL.vertex $ GL.Vertex2 x (y + tileSize)
-    -- GL.color $ (GL.Color3 0 0 0 :: GL.Color3 GL.GLfloat)
-    -- GL.renderPrimitive GL.LineStrip $ do
-    --     GL.vertex $ GL.Vertex2 x y
-    --     GL.vertex $ GL.Vertex2 (x + tileSize) y
-    --     GL.vertex $ GL.Vertex2 (x + tileSize) (y + tileSize)
-    --     GL.vertex $ GL.Vertex2 x (y + tileSize)
-    --     GL.vertex $ GL.Vertex2 x y

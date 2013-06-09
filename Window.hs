@@ -5,7 +5,7 @@ import qualified Graphics.UI.GLFW as GLFW
 import Graphics.Rendering.OpenGL (($=))
 
 windowSize :: (Int, Int)
-windowSize = (400, 400)
+windowSize = (600, 600)
 
 tupleToGLSize :: (Int, Int) -> GL.Size
 tupleToGLSize (x, y) = GL.Size (fromIntegral x) (fromIntegral y)
@@ -34,7 +34,8 @@ initWindow = do
         GL.matrixMode $= GL.Projection
         GL.loadIdentity
         GL.ortho2D 0 (realToFrac w) (realToFrac h) 0
-    -- keep all line strokes as a list of points in an IORef
+        GL.matrixMode $= GL.Modelview 0
+        GL.loadIdentity
 
 closeWindow = do
     GLFW.closeWindow
