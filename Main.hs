@@ -8,5 +8,6 @@ import qualified GSBomberMan
 main = do
     initWindow
     inputIORef <- registerInputCallbacks
-    runGameState GSBomberMan.new inputIORef 
+    test <- runGameState GSBomberMan.new inputIORef 
+    putStrLn $ show test
     closeWindow

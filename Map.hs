@@ -29,11 +29,18 @@ newMap = Map { _tiles = map (\x -> if (x `mod` 7 == 0) then newTile WallTile els
     defaultMapSize = 110
 
 tileAt (x, y) gameMap =
-    if (index >= 0) && (index < (gameMap^.mapSize))
+    if locationWithinBounds
         then Just $ (gameMap^.tiles) !! index
         else Nothing
   where
     index = (y * (gameMap^.rowSize) + x)
+    mapWidth = gameMap^.rowSize
+    mapHeight = gameMap^.mapSize `div` gameMap^.rowSize
+    locationWithinBounds =
+        x >= 0 &&
+        y >= 0 &&
+        x < mapWidth &&
+        y < mapHeight
 
 tileIsLower x = x `mod` 2 == 1
 
@@ -50,7 +57,13 @@ renderTileAtIndex :: Map -> (Tile, Int) -> IO ()
 renderTileAtIndex map (tile, i) = do
     let (gridY, gridX) = (i `divMod` (map^.rowSize))
     let (x, y) = gridToMap (gridX, gridY)
-    renderTile tile x y
+    renderTile tile x y shade
+  where
+    shade =
+        case tile^.tileType of
+            NormalTile -> 1.0
+            WallTile -> 0.5
+            EmptyTile -> 0.0
 
 renderMap map = do
     mapM_ (renderTileAtIndex map) (zip (map^.tiles) [0..((length (map^.tiles)) - 1)])

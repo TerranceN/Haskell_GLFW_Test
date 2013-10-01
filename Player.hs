@@ -7,21 +7,22 @@ module Player
 
 , movementDirection
 
-, newPlayer
+, new
 , flipDirections
-, updatePlayer
+, update
+, handleInput
 , setPosition
 , setNextPosition
-, drawPlayer
+, draw
 ) where
 
-import Control.Lens
-import Control.Monad
-import Control.Monad.Trans
-import Control.Monad.Trans.State
+import qualified Graphics.UI.GLFW as GLFW
 import qualified Graphics.Rendering.OpenGL as GL
 
 import Map
+import LensHelpers
+import Input
+import Tile
 
 data Player = Player { _tilePosition :: (Int, Int)
                      , _nextTilePosition :: (Int, Int)
@@ -30,14 +31,74 @@ data Player = Player { _tilePosition :: (Int, Int)
                      } deriving (Eq, Show)
 makeLenses ''Player
 
-newPlayer pos = Player { _tilePosition = pos
-                       , _nextTilePosition = pos
-                       , _percentageThere = 0
-                       , _isMoving = False
-                       }
+new pos = Player { _tilePosition = pos
+                 , _nextTilePosition = pos
+                 , _percentageThere = 0
+                 , _isMoving = False
+                 }
 
-updatePlayer :: State Player ()
-updatePlayer = do
+handleInput input gameMap = do
+    self <- get
+    if not (self^.isMoving)
+        then do
+            let isTileDown = tileIsLower (self^.tilePosition^._1)
+            if isKeyDown input (GLFW.CharKey 'D')
+                then do
+                    let yOffset = if isTileDown
+                                    then 1
+                                    else 0
+                    setPlayerNextPosition gameMap (offset (self^.tilePosition) (1, yOffset))
+                else return ()
+            if isKeyDown input (GLFW.CharKey 'E')
+                then do
+                    let yOffset = if isTileDown
+                                    then 0
+                                    else -1
+                    setPlayerNextPosition gameMap (offset (self^.tilePosition) (1, yOffset))
+                else return ()
+            if isKeyDown input (GLFW.CharKey 'Q')
+                then do
+                    let yOffset = if isTileDown
+                                    then 0
+                                    else -1
+                    setPlayerNextPosition gameMap (offset (self^.tilePosition) (-1, yOffset))
+                else return ()
+            if isKeyDown input (GLFW.CharKey 'A')
+                then do
+                    let yOffset = if isTileDown
+                                    then 1
+                                    else 0
+                    setPlayerNextPosition gameMap (offset (self^.tilePosition) (-1, yOffset))
+                else return ()
+            if isKeyDown input (GLFW.CharKey 'W')
+                then do
+                    setPlayerNextPosition gameMap (offset (self^.tilePosition) (0, -1))
+                else return ()
+            if isKeyDown input (GLFW.CharKey 'S')
+                then do
+                    setPlayerNextPosition gameMap (offset (self^.tilePosition) (0, 1))
+                else return ()
+        else do
+            let char = case (self^.movementDirection) of
+                            (0, 1) -> 'W'
+                            (0, -1) -> 'S'
+                            _ -> '\0'
+            if isKeyDown input (GLFW.CharKey char)
+                then do
+                    flipDirections
+                else return ()
+
+offset (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
+
+setPlayerNextPosition gameMap pos = do
+    case (tileAt pos gameMap) of
+        Just tile -> case tile^.tileType of
+                        NormalTile -> nextTilePosition .= pos
+                        _ -> return ()
+        Nothing -> return ()
+
+update :: State Player ()
+update = do
     self <- get
     if (self^.nextTilePosition) /= (self^.tilePosition)
         then do
@@ -61,17 +122,16 @@ setNextPosition :: (Int, Int) -> State Player ()
 setNextPosition pos = do
     nextTilePosition .= pos
 
-flipDirections = execState flip
-  where
-    flip = do
-        self <- get
-        let tmp = self^.tilePosition
-        tilePosition .= self^.nextTilePosition
-        nextTilePosition .= tmp
-        percentageThere .= 1 - (self^.percentageThere)
+flipDirections :: State Player ()
+flipDirections = do
+    self <- get
+    let tmp = self^.tilePosition
+    tilePosition .= self^.nextTilePosition
+    nextTilePosition .= tmp
+    percentageThere .= 1 - (self^.percentageThere)
 
-movementDirection :: Lens Player () (Int, Int) a
-movementDirection = lens diff (\player v -> ())
+movementDirection :: Lens Player Player (Int, Int) a
+movementDirection = lens diff (\player v -> player)
   where
     diff player = (nx - x, ny - y)
       where
@@ -80,8 +140,8 @@ movementDirection = lens diff (\player v -> ())
         nx = player^.nextTilePosition^._1
         ny = player^.nextTilePosition^._2
 
-drawPlayer :: StateT Player IO ()
-drawPlayer = do
+draw :: StateT Player IO ()
+draw = do
     self <- get
     lift $ do
         GL.renderPrimitive GL.Quads $ do

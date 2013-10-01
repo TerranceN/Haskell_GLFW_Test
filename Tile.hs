@@ -35,11 +35,7 @@ hexPoints x y rad = do
     hexPoint angle = do
         GL.vertex $ GL.Vertex2 (x + rad * cos(angle)) (y + rad * sin(angle))
 
-renderTile tile x y = do
-    let shade = case tile^.tileType of
-                    NormalTile -> 1.0
-                    WallTile -> 0.5
-                    EmptyTile -> 0.0
+renderTile tile x y shade = do
     GL.color $ (GL.Color3 shade shade shade :: GL.Color3 GL.GLfloat)
     GL.renderPrimitive GL.TriangleFan $ do
         GL.vertex $ GL.Vertex2 x y
